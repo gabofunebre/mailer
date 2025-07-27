@@ -7,6 +7,6 @@ logfile        /tmp/msmtp.log
 account        default
 host           mail.smtp2go.com
 port           587
-from           no-reply@gabo.ar
-user           TU_USUARIO_SMTP2GO
-password       TU_PASSWORD_SMTP2GO
+from           ${SMTP_FROM}
+user           ${SMTP_USER}
+password       ${SMTP_PASS}

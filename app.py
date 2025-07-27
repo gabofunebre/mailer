@@ -1,5 +1,3 @@
-
-# mailer/app.py
 from flask import Flask, request, jsonify
 from email.message import EmailMessage
 import smtplib, base64
@@ -16,7 +14,7 @@ def send_email():
 
     msg = EmailMessage()
     msg["Subject"] = data["subject"]
-    msg["From"] = data.get("from", "no-reply@gabo.ar")
+    msg["From"] = data.get("from", os.getenv("SMTP_FROM", "no-reply@gabo.ar"))
     msg["To"] = data["to"]
     msg.set_content("Este correo requiere un cliente compatible con HTML")
     msg.add_alternative(data["body"], subtype="html")
@@ -36,7 +34,7 @@ def send_email():
     try:
         with smtplib.SMTP("mail.smtp2go.com", 587) as s:
             s.starttls()
-            s.login("TU_USUARIO_SMTP2GO", "TU_PASSWORD_SMTP2GO")
+            s.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASS"))
             s.send_message(msg)
         return jsonify({"status": "sent", "to": data["to"]}), 200
     except Exception as e:
