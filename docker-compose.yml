@@ -2,9 +2,13 @@ services:
   mailer:
     build: .
     container_name: mailer
+    
+    #expose:
+    # - "3322"
+
     # Eliminar mapeo a host para que solo servicios en mailer_net puedan acceder
-    expose:
-      - "3322"
+    ports:
+      - "3322:3322"
     networks:
       - mailer_net
     restart: unless-stopped
