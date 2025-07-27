@@ -11,11 +11,11 @@ SERVICE := mailer
 
 # Construye y levanta el contenedor en segundo plano
 up:
-	docker-compose up -d --build
+	docker compose up -d --build
 
 # Detiene y elimina el contenedor
 down:
-	docker-compose down
+	docker compose down
 
 # Inicia el contenedor si ya está creado
 start:
