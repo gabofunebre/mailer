@@ -7,6 +7,12 @@ app = Flask(__name__)
 
 @app.route("/send", methods=["POST"])
 def send_email():
+    # Validación de token simple vía header Authorization
+    auth_header = request.headers.get("Authorization")
+    expected_token = os.getenv("MAILER_TOKEN")
+    if not auth_header or auth_header != f"Bearer {expected_token}":
+        return jsonify({"error": "Unauthorized"}), 401
+
     data = request.get_json()
     required = ["to", "subject", "body"]
     if not all(k in data for k in required):
