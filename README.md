@@ -4,12 +4,13 @@ Microservicio de envío de correos por HTTP mediante SMTP. Diseñado para ser ut
 
 ## Características
 
-- Envía correos con HTML y adjuntos vía SMTP (SMTP2GO, u otro).
+- Envía correos con HTML y adjuntos vía SMTP (MailerSend, u otro proveedor).
 - Expone un único endpoint `POST /send` para envío de correos.
 - Dockerizable y desacoplado del resto del sistema.
-- Preparado para producción y uso interno.
+- Seguridad mediante token Bearer.
 - Cuerpo del mail en HTML.
-- Adjuntos opcionales (formato base64).
+- Adjuntos opcionales (en base64).
+- Logs automáticos desde el contenedor para trazabilidad.
 
 ## Uso
 
@@ -23,6 +24,7 @@ make up
 
 ```http
 POST /send
+Authorization: Bearer TU_TOKEN
 Content-Type: application/json
 
 {
@@ -42,6 +44,20 @@ Content-Type: application/json
 
 ## Requisitos
 
-- Docker
+- Docker y Docker Compose
 - Red Docker externa llamada `mailer_net`
-- Cuenta SMTP válida (como SMTP2GO)
+- Cuenta SMTP válida (MailerSend recomendado)
+- Variables de entorno configuradas en `.env`:
+
+```env
+SMTP_USER=usuario_mailersend
+SMTP_PASS=clave_mailersend
+SMTP_FROM=no-reply@tudominio.com
+SMTP_SERVER=smtp.mailersend.net
+SMTP_PORT=587
+MAILER_TOKEN=secreto123
+```
+
+## Notas
+
+Este servicio está pensado para ser utilizado solo dentro de entornos internos y no expuesto al host.

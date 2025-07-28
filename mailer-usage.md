@@ -1,14 +1,14 @@
 # Guía de uso del servicio `mailer`
 
-El servicio `mailer` es un microservicio HTTP para enviar correos salientes desde tus aplicaciones. Utiliza autenticación por token y expone un único endpoint `/send`.
+El servicio `mailer` es un microservicio HTTP para enviar correos salientes desde tus aplicaciones backend. Utiliza autenticación por token, opera sobre SMTP (MailerSend) y expone un único endpoint: `/send`.
 
 ---
 
 ## 🔐 Seguridad
 
-- Requiere token `Bearer` en el header `Authorization`
-- Solo expone el puerto 3322 **dentro de la red Docker interna** (`mailer_net`)
-- Ideal para uso backend a backend
+- Requiere token tipo Bearer en el header `Authorization`
+- No está expuesto al host: solo accesible desde servicios conectados a la red Docker interna `mailer_net`
+- Recomendado exclusivamente para comunicación **backend a backend**
 
 ---
 
@@ -16,20 +16,20 @@ El servicio `mailer` es un microservicio HTTP para enviar correos salientes desd
 
 ### `POST /send`
 
-#### Headers requeridos
+#### Headers requeridos:
 
-```
+```http
 Authorization: Bearer TU_TOKEN
 Content-Type: application/json
 ```
 
-#### JSON esperado:
+#### Cuerpo esperado (JSON):
 
 ```json
 {
   "to": "usuario@destino.com",
   "subject": "Asunto del correo",
-  "body": "<p>HTML del mensaje</p>",
+  "body": "<p>Contenido HTML del mensaje</p>",
   "from": "no-reply@gabo.ar",        // opcional
   "attachments": [                   // opcional
     {
@@ -60,17 +60,40 @@ curl -X POST http://mailer:3322/send \
 
 ## 🧠 Consideraciones
 
-- Si el `MAILER_TOKEN` no coincide, el servicio devuelve `401 Unauthorized`
-- Si el JSON está mal formado, devuelve `400 Bad Request`
-- Si hay error con SMTP, devuelve `500` con el mensaje de error
+- Si el `MAILER_TOKEN` es incorrecto o falta → `401 Unauthorized`
+- Si faltan campos requeridos → `400 Bad Request`
+- Si ocurre un error en el envío SMTP → `500 Internal Server Error`
+- Se puede adjuntar cualquier archivo en Base64 con su tipo MIME correcto
 
 ---
 
-## 🔁 Uso típico
+## 🔁 Flujo de uso
 
-1. Tu app genera el contenido del correo (HTML, asunto, etc.)
-2. Hace un `POST /send` al `mailer`
-3. El `mailer` lo envía por SMTP2GO usando tu dominio (`gabo.ar`)
-4. Devuelve confirmación o error
+1. Tu aplicación genera el correo (HTML, asunto, etc.)
+2. Hace un `POST` al servicio `mailer` usando el token secreto
+3. El servicio envía el correo a través de MailerSend (SMTP)
+4. Se registra el resultado (log del contenedor) y se responde con `200 OK` si fue exitoso
+
+---
+
+## 🛠️ Requisitos de red
+
+- El contenedor `mailer` debe estar en la red `mailer_net`
+- Las apps que deseen enviar correos deben estar también en esa red
+
+---
+
+## 🌐 Configuración vía `.env`
+
+Estas variables deben estar configuradas:
+
+```env
+SMTP_USER=usuario_de_mailersend
+SMTP_PASS=contraseña_de_mailersend
+SMTP_FROM=no-reply@gabo.ar
+SMTP_SERVER=smtp.mailersend.net
+SMTP_PORT=587
+MAILER_TOKEN=secreto123
+```
 
 ---
